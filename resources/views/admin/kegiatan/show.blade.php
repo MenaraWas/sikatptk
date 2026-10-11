@@ -97,7 +97,7 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <a href="{{ asset('storage/' . $kegiatan->file_sertifikat) }}" 
+                            <a href="{{ route('admin.kegiatan.preview', $kegiatan) }}" 
                                target="_blank" 
                                class="px-4 py-2 rounded-xl bg-white border border-teal-200 text-teal-800 text-xs font-bold hover:bg-teal-50 transition">
                                 Buka di Tab Baru ↗
@@ -109,12 +109,12 @@
                         </div>
                     </div>
 
-                    <!-- PDF / Image Inline Embed if image or pdf -->
+                    <!-- PDF / Image Inline Embed via secure route (tidak bergantung pada symlink) -->
                     <div class="mt-4 border border-slate-200 rounded-2xl overflow-hidden bg-slate-900">
                         @if(str_contains($kegiatan->file_mime, 'pdf'))
-                            <iframe src="{{ asset('storage/' . $kegiatan->file_sertifikat) }}" class="w-full h-96 border-none" title="Preview PDF"></iframe>
+                            <iframe src="{{ route('admin.kegiatan.preview', $kegiatan) }}" class="w-full h-96 border-none" title="Preview PDF"></iframe>
                         @elseif(str_contains($kegiatan->file_mime, 'image'))
-                            <img src="{{ asset('storage/' . $kegiatan->file_sertifikat) }}" alt="Sertifikat" class="max-h-96 mx-auto object-contain p-2">
+                            <img src="{{ route('admin.kegiatan.preview', $kegiatan) }}" alt="Sertifikat" class="max-h-96 mx-auto object-contain p-2">
                         @endif
                     </div>
                 @else

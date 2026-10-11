@@ -25,6 +25,16 @@ Route::get('/api/ptk/search', [KegiatanSubmissionController::class, 'searchPtk']
 // Halaman Publik "Lihat Data SIKAT PTK"
 Route::get('/data-kegiatan', [PublicRekapController::class, 'index'])->name('rekap.index');
 
+// Helper Deploy Hosting (bisa diakses jika hosting tidak ada akses SSH)
+Route::get('/artisan-storage-link', function () {
+    \Illuminate\Support\Facades\Artisan::call('storage:link');
+    return response('Storage symlink berhasil dibuat: ' . \Illuminate\Support\Facades\Artisan::output());
+});
+Route::get('/artisan-clear', function () {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    return response('Cache berhasil dibersihkan: ' . \Illuminate\Support\Facades\Artisan::output());
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Authentication & Dashboard
@@ -46,6 +56,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/kegiatan/export-csv', [AdminKegiatanController::class, 'exportCsv'])->name('kegiatan.export');
         Route::get('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'show'])->name('kegiatan.show');
         Route::post('/kegiatan/{kegiatan}/status', [AdminKegiatanController::class, 'updateStatus'])->name('kegiatan.status');
+        Route::get('/kegiatan/{kegiatan}/preview', [AdminKegiatanController::class, 'previewFile'])->name('kegiatan.preview');
         Route::get('/kegiatan/{kegiatan}/download', [AdminKegiatanController::class, 'downloadFile'])->name('kegiatan.download');
         Route::delete('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'destroy'])->name('kegiatan.destroy');
 

@@ -100,6 +100,22 @@ class AdminKegiatanController extends Controller
         return response()->download($path, $downloadName);
     }
 
+    public function previewFile(Kegiatan $kegiatan)
+    {
+        if (!$kegiatan->file_sertifikat || !Storage::disk('public')->exists($kegiatan->file_sertifikat)) {
+            abort(404, 'Berkas sertifikat tidak ditemukan.');
+        }
+
+        $path     = Storage::disk('public')->path($kegiatan->file_sertifikat);
+        $mime     = $kegiatan->file_mime ?: mime_content_type($path);
+        $content  = file_get_contents($path);
+
+        return response($content, 200)
+            ->header('Content-Type', $mime)
+            ->header('Content-Disposition', 'inline; filename="' . ($kegiatan->file_original_name ?: basename($path)) . '"')
+            ->header('Cache-Control', 'private, max-age=3600');
+    }
+
     public function destroy(Kegiatan $kegiatan)
     {
         if ($kegiatan->file_sertifikat && Storage::disk('public')->exists($kegiatan->file_sertifikat)) {
