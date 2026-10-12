@@ -1,7 +1,6 @@
 <IfModule mod_php.c>
     # 10 file x 10MB = 100MB, plus overhead and metadata.
     # Keep the total request larger than the combined upload size to avoid false "file too large" errors.
-    php_value upload_max_filesize 20M
     php_value post_max_size 256M
     php_value memory_limit 512M
     php_value max_file_uploads 20
