@@ -18,8 +18,21 @@ class PublicRekapController extends Controller
         $jenis = trim($request->query('jenis', ''));
         $ptkId = $request->query('ptk_id');
 
-        $query = Kegiatan::with(['ptk', 'submission'])
-            ->orderBy('tanggal_pelaksanaan', 'desc');
+        // Urutan: 'terbaru' (default, berdasarkan waktu upload) atau 'pelaksanaan'
+        $urut = $request->query('urut', 'terbaru');
+        if (! in_array($urut, ['terbaru', 'pelaksanaan'], true)) {
+            $urut = 'terbaru';
+        }
+
+        $query = Kegiatan::with(['ptk', 'submission']);
+
+        if ($urut === 'pelaksanaan') {
+            $query->orderByDesc('tanggal_pelaksanaan')->orderByDesc('id');
+        } else {
+            // id sebagai pembeda kedua, karena satu pengiriman bisa berisi
+            // beberapa kegiatan dengan created_at yang sama persis
+            $query->orderByDesc('created_at')->orderByDesc('id');
+        }
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -40,7 +53,7 @@ class PublicRekapController extends Controller
             $query->where('jenis_pelatihan', $jenis);
         }
 
-        if (!empty($ptkId)) {
+        if (! empty($ptkId)) {
             $query->where('ptk_id', $ptkId);
         }
 
@@ -73,7 +86,8 @@ class PublicRekapController extends Controller
             'search',
             'tahun',
             'jenis',
-            'ptkId'
+            'ptkId',
+            'urut'
         ));
     }
 }
