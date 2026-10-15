@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminKegiatanController;
+use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\AdminPtkController;
 use App\Http\Controllers\KegiatanSubmissionController;
 use App\Http\Controllers\PublicRekapController;
@@ -50,6 +51,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected Admin Routes
     Route::middleware('auth')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Ganti Password
+        Route::get('/password', [AdminPasswordController::class, 'edit'])->name('password.edit');
+        Route::put('/password', [AdminPasswordController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
         
         // Manajemen Kegiatan
         Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('kegiatan.index');

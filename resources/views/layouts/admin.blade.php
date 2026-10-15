@@ -68,6 +68,10 @@
                 <!-- User & Logout -->
                 <div class="flex items-center space-x-3 text-xs">
                     <span class="text-teal-200 hidden sm:inline">{{ Auth::user()->name ?? 'Administrator' }}</span>
+                    <a href="{{ route('admin.password.edit') }}"
+                       class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.password.*') ? 'bg-teal-800 text-white' : 'text-teal-100 hover:bg-teal-800/60' }}">
+                        Ganti Password
+                    </a>
                     <form action="{{ route('admin.logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="bg-teal-800 hover:bg-rose-700 px-3 py-1.5 rounded-lg text-xs font-bold transition">

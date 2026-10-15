@@ -33,7 +33,7 @@
                 <label class="block text-xs font-semibold uppercase text-slate-600 mb-1.5">Email Administrator</label>
                 <input type="email" 
                        name="email" 
-                       value="{{ old('email', 'admin@man2bantul.sch.id') }}" 
+                       value="{{ old('email') }}" 
                        required 
                        autofocus
                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-700 text-sm outline-none">
@@ -55,7 +55,6 @@
                     <input type="checkbox" name="remember" class="text-teal-700 rounded h-4 w-4">
                     <span class="ml-2">Ingat saya</span>
                 </label>
-                <span class="text-slate-400">Default: admin123</span>
             </div>
 
             <!-- Submit -->
