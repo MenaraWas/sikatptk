@@ -12,6 +12,13 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <a href="{{ route('admin.kegiatan.trash') }}"
+               class="px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-2 transition">
+                Data Terhapus
+                @if($jumlahTerhapus > 0)
+                    <span class="bg-rose-100 text-rose-700 text-[11px] px-2 py-0.5 rounded-full">{{ $jumlahTerhapus }}</span>
+                @endif
+            </a>
             <a href="{{ route('admin.kegiatan.export', request()->query()) }}" 
                class="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -132,6 +139,17 @@
                                        title="Unduh Sertifikat">
                                         ⬇
                                     </a>
+
+                                    <form action="{{ route('admin.kegiatan.destroy', $k) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('Hapus kegiatan ini? Data dipindahkan ke Data Terhapus dan masih bisa dipulihkan.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 font-semibold text-xs"
+                                                title="Hapus kegiatan">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

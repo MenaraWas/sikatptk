@@ -160,6 +160,37 @@
                     </div>
                 </form>
             </div>
+
+            <!-- Zona Hapus -->
+            @php($jumlahDalamPengiriman = $kegiatan->submission?->kegiatans()->count() ?? 1)
+            <div class="rounded-2xl border border-rose-200 bg-rose-50/50 p-5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-rose-700 mb-1">Hapus Data</h4>
+                <p class="text-xs text-slate-500 mb-4">
+                    Data dipindahkan ke menu Data Terhapus dan tidak lagi dihitung di rekap. Bisa dipulihkan kapan saja.
+                </p>
+
+                <div class="flex flex-wrap gap-3">
+                    <form action="{{ route('admin.kegiatan.destroy', $kegiatan) }}" method="POST"
+                          onsubmit="return confirm('Hapus kegiatan ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition">
+                            Hapus Kegiatan Ini
+                        </button>
+                    </form>
+
+                    @if($kegiatan->submission && $jumlahDalamPengiriman > 1)
+                        <form action="{{ route('admin.kegiatan.submission.destroy', $kegiatan->submission) }}" method="POST"
+                              onsubmit="return confirm('Hapus SEMUA {{ $jumlahDalamPengiriman }} kegiatan dalam pengiriman ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-4 py-2 rounded-xl bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-bold transition">
+                                Hapus Seluruh Pengiriman ({{ $jumlahDalamPengiriman }} kegiatan)
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 </div>

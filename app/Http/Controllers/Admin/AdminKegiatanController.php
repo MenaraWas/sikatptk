@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Kegiatan;
 use App\Models\Ptk;
+use App\Models\Submission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -54,9 +56,11 @@ class AdminKegiatanController extends Controller
             ->toArray();
 
         $ptks = Ptk::where('is_active', true)->orderBy('nama')->get(['id', 'nama']);
+        $jumlahTerhapus = Kegiatan::onlyTrashed()->count();
 
         return view('admin.kegiatan.index', compact(
             'kegiatans',
+            'jumlahTerhapus',
             'availableYears',
             'ptks',
             'search',
@@ -116,15 +120,119 @@ class AdminKegiatanController extends Controller
             ->header('Cache-Control', 'private, max-age=3600');
     }
 
+    /**
+     * Hapus satu kegiatan (soft delete). Berkas sertifikat TIDAK dihapus,
+     * supaya data bisa dipulihkan dari menu Data Terhapus.
+     */
     public function destroy(Kegiatan $kegiatan)
     {
-        if ($kegiatan->file_sertifikat && Storage::disk('public')->exists($kegiatan->file_sertifikat)) {
-            Storage::disk('public')->delete($kegiatan->file_sertifikat);
+        DB::transaction(function () use ($kegiatan) {
+            $submission = $kegiatan->submission;
+
+            $kegiatan->delete();
+
+            if ($submission) {
+                $sisa = $submission->kegiatans()->count();
+
+                if ($sisa === 0) {
+                    // Pengiriman kosong ikut disembunyikan
+                    $submission->delete();
+                } else {
+                    $submission->update(['jumlah_kegiatan' => $sisa]);
+                }
+            }
+        });
+
+        // Tidak memakai back(): kalau dihapus dari halaman detail, halaman itu sudah tidak ada.
+        return redirect()->route('admin.kegiatan.index')
+            ->with('success', 'Kegiatan dipindahkan ke Data Terhapus dan masih bisa dipulihkan.');
+    }
+
+    /**
+     * Hapus seluruh kegiatan dalam satu pengiriman (soft delete).
+     */
+    public function destroySubmission(Submission $submission)
+    {
+        $jumlah = 0;
+
+        DB::transaction(function () use ($submission, &$jumlah) {
+            foreach ($submission->kegiatans()->get() as $kegiatan) {
+                $kegiatan->delete();
+                $jumlah++;
+            }
+
+            $submission->delete();
+        });
+
+        return redirect()->route('admin.kegiatan.index')
+            ->with('success', "Pengiriman {$submission->batch_code} ({$jumlah} kegiatan) dipindahkan ke Data Terhapus.");
+    }
+
+    /**
+     * Daftar kegiatan yang sudah dihapus (soft delete).
+     */
+    public function trash()
+    {
+        $kegiatans = Kegiatan::onlyTrashed()
+            ->with([
+                'ptk',
+                'submission' => fn ($q) => $q->withTrashed(),
+            ])
+            ->orderByDesc('deleted_at')
+            ->paginate(20);
+
+        return view('admin.kegiatan.trash', compact('kegiatans'));
+    }
+
+    /**
+     * Pulihkan kegiatan yang terhapus.
+     */
+    public function restore(int $id)
+    {
+        $kegiatan = Kegiatan::onlyTrashed()->findOrFail($id);
+
+        DB::transaction(function () use ($kegiatan) {
+            $submission = Submission::withTrashed()->find($kegiatan->submission_id);
+
+            if ($submission && $submission->trashed()) {
+                $submission->restore();
+            }
+
+            $kegiatan->restore();
+
+            if ($submission) {
+                $submission->update(['jumlah_kegiatan' => $submission->kegiatans()->count()]);
+            }
+        });
+
+        return back()->with('success', 'Kegiatan berhasil dipulihkan.');
+    }
+
+    /**
+     * Hapus permanen: data dan berkas sertifikat hilang dan tidak bisa dipulihkan.
+     */
+    public function forceDestroy(int $id)
+    {
+        $kegiatan = Kegiatan::onlyTrashed()->findOrFail($id);
+        $file = $kegiatan->file_sertifikat;
+        $submissionId = $kegiatan->submission_id;
+
+        DB::transaction(function () use ($kegiatan, $submissionId) {
+            $kegiatan->forceDelete();
+
+            $submission = Submission::withTrashed()->find($submissionId);
+
+            // Hapus pengiriman hanya kalau sudah tidak punya kegiatan sama sekali
+            if ($submission && $submission->kegiatans()->withTrashed()->count() === 0) {
+                $submission->forceDelete();
+            }
+        });
+
+        if ($file && Storage::disk('public')->exists($file)) {
+            Storage::disk('public')->delete($file);
         }
 
-        $kegiatan->delete();
-
-        return back()->with('success', 'Data kegiatan berhasil dihapus.');
+        return back()->with('success', 'Kegiatan dan berkas sertifikatnya dihapus permanen.');
     }
 
     /**

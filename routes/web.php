@@ -54,6 +54,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Manajemen Kegiatan
         Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('kegiatan.index');
         Route::get('/kegiatan/export-csv', [AdminKegiatanController::class, 'exportCsv'])->name('kegiatan.export');
+        Route::get('/kegiatan/terhapus', [AdminKegiatanController::class, 'trash'])->name('kegiatan.trash');
+        Route::post('/kegiatan/{id}/pulihkan', [AdminKegiatanController::class, 'restore'])->whereNumber('id')->name('kegiatan.restore');
+        Route::delete('/kegiatan/{id}/permanen', [AdminKegiatanController::class, 'forceDestroy'])->whereNumber('id')->name('kegiatan.force-destroy');
+        Route::delete('/pengiriman/{submission}', [AdminKegiatanController::class, 'destroySubmission'])->name('kegiatan.submission.destroy');
         Route::get('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'show'])->name('kegiatan.show');
         Route::post('/kegiatan/{kegiatan}/status', [AdminKegiatanController::class, 'updateStatus'])->name('kegiatan.status');
         Route::get('/kegiatan/{kegiatan}/preview', [AdminKegiatanController::class, 'previewFile'])->name('kegiatan.preview');
