@@ -26,15 +26,7 @@ Route::get('/api/ptk/search', [KegiatanSubmissionController::class, 'searchPtk']
 // Halaman Publik "Lihat Data SIKAT PTK"
 Route::get('/data-kegiatan', [PublicRekapController::class, 'index'])->name('rekap.index');
 
-// Helper Deploy Hosting (bisa diakses jika hosting tidak ada akses SSH)
-Route::get('/artisan-storage-link', function () {
-    \Illuminate\Support\Facades\Artisan::call('storage:link');
-    return response('Storage symlink berhasil dibuat: ' . \Illuminate\Support\Facades\Artisan::output());
-});
-Route::get('/artisan-clear', function () {
-    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-    return response('Cache berhasil dibersihkan: ' . \Illuminate\Support\Facades\Artisan::output());
-});
+
 
 /*
 |--------------------------------------------------------------------------
